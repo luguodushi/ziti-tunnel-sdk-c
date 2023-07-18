@@ -7,13 +7,16 @@
 #define MEM_SIZE              524288      /* the size of the heap memory (1600) */
 #endif
 
+#define SCAREY_DEBUGGING_LWIP 1
 #if SCAREY_DEBUGGING_LWIP
-#define MEMP_OVERFLOW_CHECK   2           /* reserves bytes before and after each memp element in every pool and fills it with a prominent default value */
-#define MEMP_SANITY_CHECK     1           /* run a sanity check after each mem_free() to make sure that the linked list of heap elements is not corrupted */
+//#define MEMP_OVERFLOW_CHECK   2           /* reserves bytes before and after each memp element in every pool and fills it with a prominent default value */
+//#define MEMP_SANITY_CHECK     1           /* run a sanity check after each mem_free() to make sure that the linked list of heap elements is not corrupted */
 //#define LWIP_ALLOW_MEM_FREE_FROM_OTHER_CONTEXT 0
 // enable lwip logging for e.g. pbuf operations
 #define LWIP_DEBUG
-#define PBUF_DEBUG LWIP_DBG_ON
+#define TCP_DEBUG LWIP_DBG_ON
+//#define TCP_INPUT_DEBUG LWIP_DBG_ON
+//#define TCP_OUTPUT_DEBUG LWIP_DBG_ON
 #endif
 //#define MEMP_NUM_PBUF       64          /* number of memp struct pbufs (used for PBUF_ROM and PBUF_REF) */
 
