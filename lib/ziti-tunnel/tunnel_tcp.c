@@ -93,8 +93,6 @@ static struct tcp_pcb *new_tcp_pcb(ip_addr_t src, ip_addr_t dest, struct tcp_hdr
     /* allocate a listener and set accept fn to appease lwip */
     npcb->listener = phony_listener;
     npcb->netif_idx = netif_get_index(netif_default);
-    // tell lwip to send tcp keepalive acks when the connection is established
-    ip_set_option(npcb, SOF_KEEPALIVE);
 
     /* Register the new PCB so that we can begin receiving segments for it. */
     TCP_REG_ACTIVE(npcb);
