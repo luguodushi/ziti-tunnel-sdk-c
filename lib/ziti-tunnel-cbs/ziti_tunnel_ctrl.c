@@ -131,7 +131,7 @@ static int ziti_dump_to_log_op(void *ctx, const char *fmt,  ...) {
         }
         buffer->sz += sizeof(line);
     }
-    strlcat(buffer->str, line, buffer->sz);
+    strcat(buffer->str, line);
     return 0;
 }
 
