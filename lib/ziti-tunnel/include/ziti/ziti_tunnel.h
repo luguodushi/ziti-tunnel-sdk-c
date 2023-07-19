@@ -191,6 +191,34 @@ extern int ziti_tunneler_close(tunneler_io_context tnlr_io_ctx);
 
 extern int ziti_tunneler_close_write(tunneler_io_context tnlr_io_ctx);
 
+// todo define stats types with ziti model macros
+struct ziti_tunnel_sockaddr_in {
+    ziti_protocol protocol;
+    ziti_address  ip;
+    u16_t         port;
+};
+
+struct ziti_tunnel_client {
+    struct ziti_tunnel_sockaddr_in remote;
+    struct ziti_tunnel_sockaddr_in local;
+    const char *sock_conn_state;
+    const char *ziti_service;
+};
+
+struct ziti_tunnel_ip_info {
+    u32_t used;
+    u32_t max;
+    u32_t limit;
+    model_list clients;
+};
+
+struct ziti_tunnel_ip_stats {
+    struct ziti_tunnel_ip_info tcp;
+    struct ziti_tunnel_ip_info udp;
+};
+
+extern void ziti_tunnel_get_ip_stats(struct ziti_tunnel_ip_stats *stats);
+
 extern const char* ziti_tunneler_version();
 
 extern const char* ziti_tunneler_build_date();

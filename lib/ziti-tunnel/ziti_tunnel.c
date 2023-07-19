@@ -521,10 +521,102 @@ static struct raw_pcb * init_protocol_handler(u8_t proto, raw_recv_fn recv_fn, v
 } while(0)
 
 static uv_timer_t stats_timer;
-static void log_lwip_stats(uv_timer_t *req) {
-    LOG_LWIP_POOL_STATS(DEBUG, MEMP_TCP_PCB);
-    LOG_LWIP_POOL_STATS(DEBUG, MEMP_UDP_PCB);
-    LOG_LWIP_POOL_STATS(DEBUG, MEMP_PBUF_POOL);
+
+// todo move tcp states (lwip private things) into lwip_cloned_fns.c
+#define tcp_states(XX)\
+  XX(CLOSED)\
+  XX(LISTEN)\
+  XX(SYN_SENT)\
+  XX(SYN_RCVD)\
+  XX(ESTABLISHED)\
+  XX(FIN_WAIT_1)\
+  XX(FIN_WAIT_2)\
+  XX(CLOSE_WAIT)\
+  XX(CLOSING)\
+  XX(LAST_ACK)\
+  XX(TIME_WAIT)
+
+#define tcp_str(s) #s,
+static const char* tcp_labels[] = {
+        tcp_states(tcp_str)
+};
+
+static const char* tcp_state_str(int st) {
+    if (st < 0 || st >= sizeof(tcp_labels)/sizeof(tcp_labels[0])) {
+        return "unknown";
+    }
+    return tcp_labels[st];
+}
+
+static struct ziti_tunnel_client *new_tcp_client(struct tcp_pcb *tpcb) {
+    struct ziti_tunnel_client *client = calloc(1, sizeof(struct ziti_tunnel_client));
+
+    client->local.protocol = ziti_protocol_tcp;
+    ziti_address_from_ip_addr(&client->local.ip, &tpcb->local_ip);
+    client->local.port = tpcb->local_port;
+
+    client->remote.protocol = ziti_protocol_tcp;
+    ziti_address_from_ip_addr(&client->remote.ip, &tpcb->remote_ip);
+    client->remote.port = tpcb->remote_port;
+
+    client->sock_conn_state = tcp_state_str(tpcb->state);
+
+    io_ctx_t *io = tpcb->callback_arg;
+    if (io && io->tnlr_io) {
+        client->ziti_service = io->tnlr_io->service_name;
+    } else {
+        client->ziti_service = "<unknown>";
+    }
+
+    return client;
+}
+
+static struct ziti_tunnel_client *new_udp_client(struct udp_pcb *upcb) {
+    struct ziti_tunnel_client *client = calloc(1, sizeof(struct ziti_tunnel_client));
+
+    client->local.protocol = ziti_protocol_udp;
+    ziti_address_from_ip_addr(&client->local.ip, &upcb->local_ip);
+    client->local.port = upcb->local_port;
+
+    client->remote.protocol = ziti_protocol_udp;
+    ziti_address_from_ip_addr(&client->remote.ip, &upcb->remote_ip);
+    client->remote.port = upcb->remote_port;
+
+    client->sock_conn_state = "";
+
+    io_ctx_t *io = upcb->recv_arg;
+    if (io && io->tnlr_io) {
+        client->ziti_service = io->tnlr_io->service_name;
+    } else {
+        client->ziti_service = "<unknown>";
+    }
+
+    return client;
+}
+
+void ziti_tunnel_get_ip_stats(struct ziti_tunnel_ip_stats *stats) {
+    stats->tcp.used = memp_pools[MEMP_TCP_PCB]->stats->used;
+    stats->tcp.max = memp_pools[MEMP_TCP_PCB]->stats->max;
+    stats->tcp.limit = memp_pools[MEMP_TCP_PCB]->stats->avail;
+
+    model_list_clear(&stats->tcp.clients, free);
+    struct tcp_pcb *tpcb;
+    for (tpcb = tcp_active_pcbs; tpcb != NULL; tpcb = tpcb->next) {
+        model_list_append(&stats->tcp.clients, new_tcp_client(tpcb));
+    }
+
+    for (tpcb = tcp_tw_pcbs; tpcb != NULL; tpcb = tpcb->next) {
+        model_list_append(&stats->tcp.clients, new_tcp_client(tpcb));
+    }
+
+    stats->udp.used = memp_pools[MEMP_UDP_PCB]->stats->used;
+    stats->udp.max = memp_pools[MEMP_UDP_PCB]->stats->max;
+    stats->udp.limit = memp_pools[MEMP_UDP_PCB]->stats->avail;
+
+    struct udp_pcb *upcb;
+    for (upcb = udp_pcbs; upcb != NULL; upcb = upcb->next) {
+        model_list_append(&stats->udp.clients, new_udp_client(upcb));
+    }
 }
 
 static void run_packet_loop(uv_loop_t *loop, tunneler_context tnlr_ctx) {
@@ -571,10 +663,6 @@ static void run_packet_loop(uv_loop_t *loop, tunneler_context tnlr_ctx) {
     uv_timer_init(loop, &tnlr_ctx->lwip_timer_req);
     uv_unref(&tnlr_ctx->lwip_timer_req);
     uv_timer_start(&tnlr_ctx->lwip_timer_req, check_lwip_timeouts, 0, 10);
-
-    uv_timer_init(loop, &stats_timer);
-    uv_unref((uv_handle_t *) &stats_timer);
-    uv_timer_start(&stats_timer, log_lwip_stats, 0, 10000);
 }
 
 typedef struct ziti_tunnel_async_call_s {

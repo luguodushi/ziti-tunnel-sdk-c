@@ -25,8 +25,19 @@
 #define MIN(a,b) ((a)<(b) ? (a) : (b))
 #endif
 
-#define LOG_STATE(level, op, pcb, ...) \
-TNL_LOG(level, op " %p, state=%d(%s) flags=%#0x", ##__VA_ARGS__, pcb, pcb->state, tcp_state_str(pcb->state), pcb->flags)
+static char log_state_local_ip[IPADDR_STRLEN_MAX];
+static char log_state_remote_ip[IPADDR_STRLEN_MAX];
+#define LOG_STATE(level, op, pcb, ...) do { \
+    io_ctx_t *log_state_io = ((io_ctx_t *)(pcb)->callback_arg); \
+    tunneler_io_context log_state_tnlr_io = log_state_io ? log_state_io->tnlr_io : NULL; \
+    const char *service_name = log_state_tnlr_io ? log_state_tnlr_io->service_name : "<unknown>"; \
+    ipaddr_ntoa_r(&pcb->local_ip, log_state_local_ip, sizeof(log_state_local_ip)); \
+    ipaddr_ntoa_r(&pcb->remote_ip, log_state_remote_ip, sizeof(log_state_remote_ip)); \
+    TNL_LOG(level, op " tcp local=%s:%d remote=%s:%d state=%d(%s) flags=%#0x service=%s", ##__VA_ARGS__, \
+            log_state_local_ip, pcb->local_port, \
+            log_state_remote_ip, pcb->remote_port, \
+            pcb->state, tcp_state_str(pcb->state), pcb->flags, service_name); \
+} while (0)
 
 #define tcp_states(XX)\
   XX(CLOSED)\

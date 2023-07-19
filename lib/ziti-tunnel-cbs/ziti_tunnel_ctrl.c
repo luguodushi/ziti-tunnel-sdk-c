@@ -109,7 +109,13 @@ static ziti_context get_ziti(const char *identifier) {
     return inst ? inst->ztx : NULL;
 }
 
-static int ziti_dump_to_log_op(void* stringsBuilder, const char *fmt,  ...) {
+struct string_buffer {
+    char *str;
+    size_t sz;
+};
+
+static int ziti_dump_to_log_op(void *ctx, const char *fmt,  ...) {
+    struct string_buffer *buffer = ctx;
     static char line[4096];
 
     va_list vargs;
@@ -117,22 +123,45 @@ static int ziti_dump_to_log_op(void* stringsBuilder, const char *fmt,  ...) {
     vsnprintf(line, sizeof(line), fmt, vargs);
     va_end(vargs);
 
-    if (strlen(stringsBuilder) + strlen(line) > MAXBUFFERLEN) {
-        return -1;
+    if (strlen(buffer->str) + strlen(line) + 1 > buffer->sz) {
+        void *p = realloc(buffer->str, buffer->sz + sizeof(line));
+        if (p == NULL) {
+            ZITI_LOG(WARN, "failed to allocate %zu bytes. ziti_dump contents will be truncated", buffer->sz + sizeof(line));
+            return -1;
+        }
+        buffer->sz += sizeof(line);
     }
-    // write/append to the buffer
-    strncat(stringsBuilder, line, sizeof(line));
+    strlcat(buffer->str, line, buffer->sz);
     return 0;
 }
 
 static void ziti_dump_to_log(void *ctx) {
-    char* buffer;
-    buffer = malloc(MAXBUFFERLEN*sizeof(char));
-    buffer[0] = 0;
-    //actually invoke ziti_dump here
-    ziti_dump(ctx, ziti_dump_to_log_op, buffer);
-    ZITI_LOG(INFO, "ziti dump to log %s", buffer);
-    free(buffer);
+    struct string_buffer buffer = {
+            .str = calloc(4096, sizeof(char)),
+            .sz = 4096,
+    };
+    ziti_dump(ctx, ziti_dump_to_log_op, &buffer);
+
+    struct ziti_tunnel_ip_stats stats = {0};
+    ziti_tunnel_get_ip_stats(&stats);
+    ziti_dump_to_log_op(&buffer, "\n=================\nTCP Stats:\n");
+    ziti_dump_to_log_op(&buffer, "TCP handles used:%d max:%d limit:%d", stats.tcp.used, stats.tcp.max, stats.tcp.limit);
+    ziti_dump_to_log_op(&buffer, "\n=================\nTCP Connections:\n");
+    struct ziti_tunnel_client *c;
+    char local_ip_str[IPADDR_STRLEN_MAX];
+    char remote_ip_str[IPADDR_STRLEN_MAX];
+    MODEL_LIST_FOREACH(c, stats.tcp.clients) {
+        ziti_address_print(local_ip_str, sizeof(local_ip_str), &c->local.ip);
+        ziti_address_print(remote_ip_str, sizeof(remote_ip_str), &c->remote.ip);
+        ziti_dump_to_log_op(&buffer, "TCP local=%s:%d remote=%s:%d state=%s ziti_service=%s\n",
+                            local_ip_str, c->local.port, remote_ip_str, c->remote.port, c->sock_conn_state, c->ziti_service);
+    }
+
+    ZITI_LOG(INFO, "ziti dump to log %s", buffer.str);
+    // todo move to ziti_tunnel_free_ip_stats
+    model_list_clear(&stats.tcp.clients, free);
+    model_list_clear(&stats.udp.clients, free);
+    free(buffer.str);
 }
 
 static int ziti_dump_to_file_op(void* fp, const char *fmt,  ...) {
@@ -166,6 +195,8 @@ static void ziti_dump_to_file(void *ctx, char* outputFile) {
 
     //actually invoke ziti_dump here
     ziti_dump(ctx, ziti_dump_to_file_op, fp);
+
+    // todo ziti_tunnel_ip_stats here
     fflush(fp);
     fclose(fp);
 }

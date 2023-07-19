@@ -178,6 +178,8 @@ extern int add_route(netif_driver tun, address_t *dest);
 
 extern int delete_route(netif_driver tun, address_t *dest);
 
+extern void log_lwip_stats(void);
+
 #ifdef __cplusplus
 }
 #endif
