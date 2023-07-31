@@ -196,7 +196,30 @@ static void ziti_dump_to_file(void *ctx, char* outputFile) {
     //actually invoke ziti_dump here
     ziti_dump(ctx, ziti_dump_to_file_op, fp);
 
-    // todo ziti_tunnel_ip_stats here
+    struct ziti_tunnel_ip_stats stats = {0};
+    struct ziti_tunnel_client *c;
+    char local_ip_str[IPADDR_STRLEN_MAX];
+    char remote_ip_str[IPADDR_STRLEN_MAX];
+    ziti_tunnel_get_ip_stats(&stats);
+    ziti_dump_to_file_op(fp, "\n=================\nTCP Stats:\n");
+    ziti_dump_to_file_op(fp, "TCP handles used:%d max:%d limit:%d", stats.tcp.used, stats.tcp.max, stats.tcp.limit);
+    ziti_dump_to_file_op(fp, "\n=================\nTCP Connections:\n");
+    MODEL_LIST_FOREACH(c, stats.tcp.clients) {
+        ziti_address_print(local_ip_str, sizeof(local_ip_str), &c->local.ip);
+        ziti_address_print(remote_ip_str, sizeof(remote_ip_str), &c->remote.ip);
+        ziti_dump_to_file_op(fp, "TCP local=%s:%d remote=%s:%d state=%s ziti_service=%s\n",
+                             local_ip_str, c->local.port, remote_ip_str, c->remote.port, c->sock_conn_state, c->ziti_service);
+    }
+    ziti_dump_to_file_op(fp, "\n=================\nUDP Stats:\n");
+    ziti_dump_to_file_op(fp, "UDP handles used:%d max:%d limit:%d", stats.udp.used, stats.udp.max, stats.udp.limit);
+    ziti_dump_to_file_op(fp, "\n=================\nUDP Connections:\n");
+    MODEL_LIST_FOREACH(c, stats.udp.clients) {
+        ziti_address_print(local_ip_str, sizeof(local_ip_str), &c->local.ip);
+        ziti_address_print(remote_ip_str, sizeof(remote_ip_str), &c->remote.ip);
+        ziti_dump_to_file_op(fp, "UDP local=%s:%d remote=%s:%d ziti_service=%s\n",
+                             local_ip_str, c->local.port, remote_ip_str, c->remote.port, c->ziti_service);
+    }
+
     fflush(fp);
     fclose(fp);
 }
