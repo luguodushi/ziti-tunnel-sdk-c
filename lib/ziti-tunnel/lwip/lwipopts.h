@@ -14,6 +14,10 @@
 //#define LWIP_ALLOW_MEM_FREE_FROM_OTHER_CONTEXT 0
 #define LWIP_DEBUG
 #define TCP_DEBUG LWIP_DBG_ON
+#define TCP_INPUT_DEBUG LWIP_DBG_ON
+#define TCP_OUTPUT_DEBUG LWIP_DBG_ON
+#define TCP_FR_DEBUG LWIP_DBG_ON
+#define TCP_RTO_DEBUG LWIP_DBG_ON
 #endif
 //#define MEMP_NUM_PBUF       64          /* number of memp struct pbufs (used for PBUF_ROM and PBUF_REF) */
 
