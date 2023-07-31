@@ -55,7 +55,7 @@ void netif_shim_input(struct netif *netif) {
         count++;
 
         if (ip_ver(buf) == 4)
-            TNL_LOG(TRACE, "received packet " PACKET_FMT " len=%zd", PACKET_FMT_ARGS(buf), nr);
+            TNL_LOG(DEBUG, "received packet " PACKET_FMT " len=%zd count=%d", PACKET_FMT_ARGS(buf), nr, count);
 
         on_packet(buf, nr, netif);
     }
