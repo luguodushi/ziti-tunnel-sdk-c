@@ -423,13 +423,24 @@ netif_driver tun_open(uv_loop_t *loop, uint32_t tun_ip, uint32_t dns_ip, const c
 
     if (ioctl(tun->fd, TUNSETIFF, &ifr) < 0) {
         if (error != NULL) {
-            snprintf(error, error_len, "failed to open tun device:%s", strerror(errno));
+            snprintf(error, error_len, "failed to open tun device: %s", strerror(errno));
         }
         tun_close(tun);
         return NULL;
     }
 
     strncpy(tun->name, ifr.ifr_name, sizeof(tun->name));
+
+    int sockfd = socket(AF_LOCAL, SOCK_DGRAM, 0);
+    ifr.ifr_mtu = 0xFFFF;
+    if (ioctl(sockfd, SIOCSIFMTU, &ifr) < 0) {
+        if (error != NULL) {
+            snprintf(error, error_len, "failed to set MTU to %d: %s", ifr.ifr_mtu, strerror(errno));
+        }
+        tun_close(tun);
+        return NULL;
+    }
+    close(sockfd);
 
     struct netif_driver_s *driver = calloc(1, sizeof(struct netif_driver_s));
     if (driver == NULL) {
