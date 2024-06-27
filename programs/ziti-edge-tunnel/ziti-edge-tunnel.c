@@ -155,13 +155,13 @@ static uv_cond_t stop_cond;
 IMPL_ENUM(event, EVENT_ACTIONS)
 
 #if _WIN32
-static char sockfile[] = "\\\\.\\pipe\\ziti-edge-tunnel.sock";
-static char eventsockfile[] = "\\\\.\\pipe\\ziti-edge-tunnel-event.sock";
+static char sockfile[] = "\\\\.\\pipe\\ztna-edge-tunnel.sock";
+static char eventsockfile[] = "\\\\.\\pipe\\ztna-edge-tunnel-event.sock";
 #elif __unix__ || unix || ( __APPLE__ && __MACH__ )
 #include <grp.h>
 #define SOCKET_PATH "/tmp/.ziti"
-static char sockfile[] = SOCKET_PATH "/ziti-edge-tunnel.sock";
-static char eventsockfile[] = SOCKET_PATH "/ziti-edge-tunnel-event.sock";
+static char sockfile[] = SOCKET_PATH "/ztna-edge-tunnel.sock";
+static char eventsockfile[] = SOCKET_PATH "/ztna-edge-tunnel-event.sock";
 #endif
 
 static int sizeof_event_clients_list() {
