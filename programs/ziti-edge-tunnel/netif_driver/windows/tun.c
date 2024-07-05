@@ -42,8 +42,8 @@
 
 #include "tun.h"
 
-#define ZITI_TUN_GUID L"2cbfd72d-370c-43b0-b0cd-c8f092a7e134"
-#define ZITI_TUN L"ziti-tun0"
+#define ZITI_TUN_GUID L"19e76768-a040-4f20-96df-a1c3d1dbf571"
+#define ZITI_TUN L"enet-ztna-tun0"
 
 #define ROUTE_LIFETIME (10 * 60) /* in seconds */
 #define ROUTE_REFRESH ((ROUTE_LIFETIME - (ROUTE_LIFETIME/10))*1000)
@@ -187,12 +187,12 @@ netif_driver tun_open(struct uv_loop_s *loop, uint32_t tun_ip, const char *cidr,
     BOOL rr;
     GUID adapterGuid;
     IIDFromString(ZITI_TUN_GUID, &adapterGuid);
-    WINTUN_ADAPTER_HANDLE adapter = WintunOpenAdapter(L"Ziti", ZITI_TUN);
+    WINTUN_ADAPTER_HANDLE adapter = WintunOpenAdapter(L"eNet ZTNA", ZITI_TUN);
     if (adapter) {
         WintunDeleteAdapter(adapter, true, &rr);
     }
 
-    tun->adapter = WintunCreateAdapter(L"Ziti", ZITI_TUN, &adapterGuid, NULL);
+    tun->adapter = WintunCreateAdapter(L"eNet ZTNA", ZITI_TUN, &adapterGuid, NULL);
     if (!tun->adapter) {
         DWORD err = GetLastError();
         snprintf(error, error_len, "Failed to create adapter: %d", err);
