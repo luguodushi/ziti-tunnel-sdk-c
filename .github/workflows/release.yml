@@ -27,19 +27,19 @@ jobs:
 
       # the purpose of this step is to identify the release that was created for the current tag and upload the
       # artifacts that do not need to be renamed
-      # - name: Release
-      #   id: get_release
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     # name: defaults to tag name
-      #     # tag_name: defaults to github.ref
-      #     # token: defaults to github.token
-      #     fail_on_unmatched_files: true
-      #     files: |
-      #       ${{ runner.workspace }}/downloads/linux-x64/ziti-edge-tunnel-Linux_x86_64.zip
-      #       ${{ runner.workspace }}/downloads/linux-arm/ziti-edge-tunnel-Linux_arm.zip
-      #       ${{ runner.workspace }}/downloads/macOS-x64/ziti-edge-tunnel-Darwin_x86_64.zip
-      #       ${{ runner.workspace }}/downloads/macOS-arm64/ziti-edge-tunnel-Darwin_arm64.zip
+      - name: Release
+        id: get_release
+        uses: softprops/action-gh-release@v1
+        with:
+          # name: defaults to tag name
+          # tag_name: defaults to github.ref
+          # token: defaults to github.token
+          fail_on_unmatched_files: true
+          files: |
+            ${{ runner.workspace }}/downloads/linux-x64/ziti-edge-tunnel-Linux_x86_64.zip
+            ${{ runner.workspace }}/downloads/linux-arm/ziti-edge-tunnel-Linux_arm.zip
+            ${{ runner.workspace }}/downloads/macOS-x64/ziti-edge-tunnel-Darwin_x86_64.zip
+            ${{ runner.workspace }}/downloads/macOS-arm64/ziti-edge-tunnel-Darwin_arm64.zip
 
       # These final two steps are only necessary because we prefer a different
       # release artifact name than is created by CMake, and so we could change
