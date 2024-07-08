@@ -14,7 +14,7 @@ concurrency:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-    container: ${{ matrix.container }}
+    # container: ${{ matrix.container }}
     name: build ${{ matrix.preset }}
     env: {}
 
@@ -22,13 +22,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macOS-11
-            name: macOS x86_64
-            preset: macOS-x64
+          # - os: macOS-11
+          #   name: macOS x86_64
+          #   preset: macOS-x64
 
-          - os: macOS-11
-            name: macOS arm64
-            preset: macOS-arm64
+          # - os: macOS-11
+          #   name: macOS arm64
+          #   preset: macOS-arm64
 
           - os: windows-latest
             name: Windows x86_64
@@ -38,20 +38,20 @@ jobs:
             name: Windows arm64
             preset: windows-arm64-vs2022
 
-          - os: ubuntu-20.04
-            container: openziti/ziti-builder:1.0.7
-            name: Linux x86_64
-            preset: linux-x64
+          # - os: ubuntu-20.04
+          #   container: openziti/ziti-builder:1.0.7
+          #   name: Linux x86_64
+          #   preset: linux-x64
 
-          - os: ubuntu-20.04
-            container: openziti/ziti-builder:1.0.7
-            name: Linux arm
-            preset: linux-arm
+          # - os: ubuntu-20.04
+          #   container: openziti/ziti-builder:1.0.7
+          #   name: Linux arm
+          #   preset: linux-arm
 
-          - os: ubuntu-20.04
-            container: openziti/ziti-builder:1.0.7
-            name: Linux arm64
-            preset: linux-arm64
+          # - os: ubuntu-20.04
+          #   container: openziti/ziti-builder:1.0.7
+          #   name: Linux arm64
+          #   preset: linux-arm64
 
     steps:
       - name: Debug action
