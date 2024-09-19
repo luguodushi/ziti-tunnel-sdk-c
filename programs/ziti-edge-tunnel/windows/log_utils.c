@@ -44,7 +44,7 @@ static void delete_older_logs(uv_async_t *ar);
 static FILE *ziti_tunneler_log = NULL;
 static uv_check_t *log_flusher;
 static struct tm *start_time;
-static const char* log_filename_base = "ziti-tunneler.log";
+static const char* log_filename_base = "tunnel";
 static int rotation_count = 7;
 
 static char* get_log_path() {
@@ -82,10 +82,10 @@ static char* create_log_filename() {
     char* base_log_filename = get_base_filename();
 
     char time_val[32];
-    strftime(time_val, sizeof(time_val), "%Y%m%d0000", start_time);
+    strftime(time_val, sizeof(time_val), "%Y%m%d", start_time);
 
     char* temp_log_filename = calloc(FILENAME_MAX, sizeof(char));
-    sprintf(temp_log_filename, "%s.%s.log", base_log_filename, time_val);
+    sprintf(temp_log_filename, "%s-%s.log", base_log_filename, time_val);
     free(base_log_filename);
     return temp_log_filename;
 }
