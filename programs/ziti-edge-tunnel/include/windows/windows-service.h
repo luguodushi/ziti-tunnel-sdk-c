@@ -6,10 +6,10 @@
 #include <winsock2.h>
 #include <windows.h>
 
-#define SVCNAME TEXT("ziti")
-#define DISPLAYSVCNAME TEXT("Ziti Desktop Edge Service")
-#define SVCDESCRIPTION TEXT("Access your Networks Secured by Ziti")
-#define APPNAME TEXT("Ziti Desktop Edge for Windows")
+#define SVCNAME TEXT("ztna")
+#define DISPLAYSVCNAME TEXT("eNet ZTNA Tunnel Service")
+#define SVCDESCRIPTION TEXT("Access your Networks Secured by eNet ZTNA")
+#define APPNAME TEXT("eNet ZTNA for Windows")
 
 #ifdef __cplusplus
 extern "C" {

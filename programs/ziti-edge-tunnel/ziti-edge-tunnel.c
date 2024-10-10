@@ -1185,7 +1185,7 @@ static void on_event(const base_event *ev) {
             }
 
             if (zev->code == ZITI_OK) {
-                id_event.Id->Active = true; // determine it from controller
+                // id_event.Id->Active = true; // determine it from controller
                 if (zev->name) {
                     if (id_event.Id->Name != NULL && strcmp(id_event.Id->Name, zev->name) != 0) {
                         free(id_event.Id->Name);
@@ -3221,7 +3221,7 @@ int main(int argc, char *argv[]) {
     // started_by_scm will be set to true only if scm initializes the config value
     // if the service is started from cmd line, SvcStart will return immediately and started_by_scm will be set to false. In this case tunnel can be run normally
     if (started_by_scm) {
-        main_cmd.name = "Ziti Desktop Edge for Windows"; // when running as a service - it must have been installed by
+        main_cmd.name = "eNet ZTNA for Windows"; // when running as a service - it must have been installed by
                                                          // the ZDEW installer so let's use that name here
         printf("The service is stopped by SCM");
         return 0;
