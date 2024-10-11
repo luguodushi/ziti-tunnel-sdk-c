@@ -1185,7 +1185,7 @@ static void on_event(const base_event *ev) {
             }
 
             if (zev->code == ZITI_OK) {
-                // id_event.Id->Active = true; // determine it from controller
+                id_event.Id->Active = true; // determine it from controller
                 if (zev->name) {
                     if (id_event.Id->Name != NULL && strcmp(id_event.Id->Name, zev->name) != 0) {
                         free(id_event.Id->Name);
